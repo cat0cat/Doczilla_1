@@ -1,8 +1,14 @@
 import java.io.*;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Main {
-    public static String path = "D:" + File.separator + "Test";
+    public static String path = "D:" + File.separator + "Test2";
     public static String fileName = "all.txt";
 
     public static void main(String[] args) {
@@ -26,6 +32,8 @@ public class Main {
         }
         //склеиваем в один файл all.txt
         split(fileList);
+
+        findRequired(fileList);
     }
 
     // добавляем все файлы в список
@@ -70,7 +78,33 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+    }
+    //находим строку в одинарных кавычках
+    public static void findRequired (ArrayList<File> fileList){
+        ArrayList<String> list = new ArrayList<>();
+        System.out.println("Строки в кавычках:");
+        for (File file : fileList) {
+            Pattern pat = Pattern.compile("require (‘.*’)");
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                String s;
+                while ((line = br.readLine()) != null) {
+                    Matcher m = pat.matcher(line);
+                    while (m.find()) {
+                        s = m.group().replace("require ", "")
+                                .replaceAll("‘", "")
+                                .replaceAll("’", "");
+                        System.out.println(s);
+                        list.add(s);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Map<String, Integer>  duplicatedCount = new HashMap<>();
+        list.forEach(a -> duplicatedCount.put(a, duplicatedCount.getOrDefault(a, 0) +1));
+        duplicatedCount.forEach((k,v) -> System.out.println(v + " раз встречается " + k));
     }
 }
 
